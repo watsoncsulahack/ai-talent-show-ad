@@ -16,37 +16,53 @@ const animated = [
 const robot = document.querySelector('.flying-robot');
 const trail = document.querySelector('.robot-trail');
 const prop = document.querySelector('.prop');
-const dots = [];
-const maxDots = 46;
 
-function dropDot(x, y) {
-  if (!trail) return;
-  const dot = document.createElement('span');
-  dot.className = 'robot-dot';
-  dot.style.left = `${x}px`;
-  dot.style.top = `${y}px`;
-  trail.appendChild(dot);
-  dots.push(dot);
-  while (dots.length > maxDots) dots.shift().remove();
-  dots.forEach((d, i) => {
-    const p = (i + 1) / dots.length;
-    d.style.opacity = (p * 0.85).toFixed(2);
-    d.style.transform = `translate(-50%, -50%) scale(${0.45 + p * 0.9})`;
-  });
+const maxDots = 28;
+const trailDots = [];
+const trailPoints = [];
+
+if (trail) {
+  for (let i = 0; i < maxDots; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'robot-dot';
+    trail.appendChild(dot);
+    trailDots.push(dot);
+  }
 }
 
 let lastX = window.innerWidth * 0.5;
 let lastY = window.innerHeight * 0.45;
-let lastDotAt = 0;
+let lastTrailAt = 0;
+
+function updateTrail(x, y, t) {
+  if (t - lastTrailAt < 62) return;
+  trailPoints.unshift({ x, y });
+  if (trailPoints.length > maxDots) trailPoints.pop();
+  lastTrailAt = t;
+
+  for (let i = 0; i < trailDots.length; i++) {
+    const p = trailPoints[i];
+    const d = trailDots[i];
+    if (!p) {
+      d.style.opacity = '0';
+      continue;
+    }
+    const fade = 1 - i / maxDots;
+    d.style.left = `${p.x}px`;
+    d.style.top = `${p.y}px`;
+    d.style.opacity = (0.08 + fade * 0.82).toFixed(2);
+    d.style.transform = `translate(-50%, -50%) scale(${0.35 + fade * 0.8})`;
+  }
+}
 
 function frame(t) {
   const time = t / 1000;
 
   animated.forEach((a, i) => {
-    const drift = a.el.classList.contains('spiral') ? 12 : 6;
+    const drift = a.el.classList.contains('spiral') ? 10 : 5;
     const dx = Math.sin(time * a.sx + i) * drift;
     const dy = Math.cos(time * a.sy + i * 0.6) * drift;
-    const dr = Math.sin(time * a.sr + i * 0.3) * (a.el.classList.contains('spiral') ? 14 : 4);
+    const dr = Math.sin(time * a.sr + i * 0.3) * (a.el.classList.contains('spiral') ? 12 : 3);
     a.el.style.transform = `translate(${dx}px, ${dy}px) rotate(${a.r + dr}deg)`;
   });
 
@@ -54,20 +70,16 @@ function frame(t) {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    const x = w * 0.5 + Math.cos(time * 0.95) * (w * 0.58) + Math.sin(time * 3.6) * 36;
-    const y = h * 0.5 + Math.sin(time * 1.3) * (h * 0.44) + Math.cos(time * 4.8) * 22;
+    const x = w * 0.5 + Math.cos(time * 0.95) * (w * 0.58) + Math.sin(time * 3.6) * 30;
+    const y = h * 0.5 + Math.sin(time * 1.3) * (h * 0.44) + Math.cos(time * 4.8) * 18;
 
     const angle = Math.atan2(y - lastY, x - lastX) * 180 / Math.PI;
     robot.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
 
     if (prop) prop.style.transform = `rotate(${time * 2400}deg)`;
 
-    if (t - lastDotAt > 42) {
-      const tx = x - Math.cos(angle * Math.PI / 180) * 18;
-      const ty = y - Math.sin(angle * Math.PI / 180) * 18 + 6;
-      dropDot(tx, ty);
-      lastDotAt = t;
-    }
+    // True trailing path: use exact previous robot positions.
+    updateTrail(lastX, lastY, t);
 
     lastX = x;
     lastY = y;
