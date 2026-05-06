@@ -36,6 +36,16 @@ let lastTrailAt = 0;
 
 function updateTrail(x, y, t) {
   if (t - lastTrailAt < 62) return;
+
+  const prev = trailPoints[0];
+  if (prev) {
+    const dx = x - prev.x;
+    const dy = y - prev.y;
+    if (Math.hypot(dx, dy) > 180) {
+      trailPoints.length = 0;
+    }
+  }
+
   trailPoints.unshift({ x, y });
   if (trailPoints.length > maxDots) trailPoints.pop();
   lastTrailAt = t;
@@ -78,8 +88,8 @@ function frame(t) {
 
     if (prop) prop.style.transform = `rotate(${time * 2400}deg)`;
 
-    // True trailing path: use exact previous robot positions.
-    updateTrail(lastX, lastY, t);
+    // True trailing path: exact robot center positions.
+    updateTrail(x, y, t);
 
     lastX = x;
     lastY = y;
