@@ -18,7 +18,7 @@ const robot = document.querySelector('.flying-robot');
 const trail = document.querySelector('.robot-trail');
 const prop = document.querySelector('.prop');
 const dots = [];
-const maxDots = 30;
+const maxDots = 42;
 
 function dropDot(x, y) {
   if (!trail) return;
@@ -28,14 +28,15 @@ function dropDot(x, y) {
   dot.style.top = `${y}px`;
   trail.appendChild(dot);
   dots.push(dot);
-  if (dots.length > maxDots) {
-    const old = dots.shift();
-    old.remove();
+
+  while (dots.length > maxDots) {
+    dots.shift().remove();
   }
+
   dots.forEach((d, i) => {
-    d.style.opacity = ((i + 1) / dots.length * 0.7).toFixed(2);
-    const s = 0.6 + (i / dots.length) * 0.7;
-    d.style.transform = `translate(-50%, -50%) scale(${s})`;
+    const p = (i + 1) / dots.length;
+    d.style.opacity = (p * 0.85).toFixed(2);
+    d.style.transform = `translate(-50%, -50%) scale(${0.45 + p * 0.9})`;
   });
 }
 
@@ -55,21 +56,24 @@ function frame(t) {
     const w = artboard.clientWidth;
     const h = artboard.clientHeight;
 
-    const x = w * 0.5 + Math.cos(time * 1.35) * (w * 0.33) + Math.sin(time * 4.3) * 18;
-    const y = h * 0.52 + Math.sin(time * 1.9) * (h * 0.28) + Math.cos(time * 5.1) * 14;
+    const padX = 64;
+    const padY = 58;
+    const rx = Math.max(40, w * 0.35 - padX);
+    const ry = Math.max(30, h * 0.3 - padY);
 
-    const x2 = w * 0.5 + Math.cos((time + 0.02) * 1.35) * (w * 0.33) + Math.sin((time + 0.02) * 4.3) * 18;
-    const y2 = h * 0.52 + Math.sin((time + 0.02) * 1.9) * (h * 0.28) + Math.cos((time + 0.02) * 5.1) * 14;
-    const angle = Math.atan2(y2 - y, x2 - x) * 180 / Math.PI;
+    const x = w * 0.5 + Math.cos(time * 1.2) * rx + Math.sin(time * 5.3) * 18;
+    const y = h * 0.53 + Math.sin(time * 1.7) * ry + Math.cos(time * 6.7) * 14;
+
+    const xNext = w * 0.5 + Math.cos((time + 0.016) * 1.2) * rx + Math.sin((time + 0.016) * 5.3) * 18;
+    const yNext = h * 0.53 + Math.sin((time + 0.016) * 1.7) * ry + Math.cos((time + 0.016) * 6.7) * 14;
+    const angle = Math.atan2(yNext - y, xNext - x) * 180 / Math.PI;
 
     robot.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
 
-    if (prop) {
-      prop.style.transform = `rotate(${time * 1800}deg)`;
-    }
+    if (prop) prop.style.transform = `rotate(${time * 2200}deg)`;
 
-    if (t - lastDotAt > 55) {
-      dropDot(x - 8, y + 8);
+    if (t - lastDotAt > 45) {
+      dropDot(x - 14, y + 10);
       lastDotAt = t;
     }
   }
