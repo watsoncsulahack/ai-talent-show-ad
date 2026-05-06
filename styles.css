@@ -11,16 +11,13 @@ body {
   margin: 0;
   font-family: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
   color: var(--ink-dark);
-  background: #0a0d14;
+  background: var(--paper);
 }
 
 .stage {
   width: min(1100px, 94vw);
   margin: 1.2rem auto 2rem;
-  background: var(--paper);
-  border-radius: 14px;
   padding: 1rem;
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
 }
 
 .topbar h1 {
@@ -36,7 +33,6 @@ body {
   height: min(62vw, 620px);
   min-height: 420px;
   background: #f8f8f6;
-  border: 3px solid #ddd;
   overflow: hidden;
 }
 
@@ -49,22 +45,37 @@ body {
   border-bottom: 320px solid transparent;
   transform-origin: center;
 }
-.tri-outer { left: 6%; top: 16%; border-bottom-color: var(--ink-blue); }
+.tri-outer { left: 6%; top: 16%; border-bottom-color: var(--ink-blue); z-index: 2; }
 .tri-mid {
   left: 11%; top: 28%;
   border-left-width: 120px; border-right-width: 120px; border-bottom-width: 210px;
   border-bottom-color: #354ecf;
+  opacity: .8;
+  z-index: 3;
 }
 .tri-inner {
   left: 16%; top: 39%;
   border-left-width: 85px; border-right-width: 85px; border-bottom-width: 145px;
   border-bottom-color: #4a5fda;
+  opacity: .75;
+  z-index: 4;
 }
+
+.a-stroke {
+  position: absolute;
+  background: #334ed8;
+  border-radius: 10px;
+  z-index: 9;
+}
+.a-left { left: 18%; top: 24%; width: 10px; height: 54%; transform: rotate(24deg); }
+.a-right { left: 34%; top: 24%; width: 10px; height: 54%; transform: rotate(-24deg); }
+.a-cross { left: 20%; top: 53%; width: 20%; height: 10px; }
 
 .circle {
   position: absolute;
   border-radius: 50%;
   border: 9px solid var(--ink-green);
+  z-index: 6;
 }
 .circle-big { width: 39%; aspect-ratio: 1; right: 8%; top: 19%; }
 .circle-inner {
@@ -77,6 +88,7 @@ body {
 .vline, .hline {
   position: absolute;
   background: var(--ink-green);
+  z-index: 6;
 }
 .vline { width: 10px; height: 104%; top: -2%; right: 27%; opacity: .9; }
 .v2 { right: 23%; }
@@ -91,6 +103,7 @@ body {
   background: var(--ink-red);
   border-radius: 20px;
   transform-origin: left center;
+  z-index: 7;
 }
 .zig::before, .zig::after {
   content: "";
@@ -106,17 +119,35 @@ body {
 .zig-left { left: 10%; top: 44%; transform: rotate(-25deg); }
 .zig-right { right: 8%; top: 48%; transform: rotate(-25deg); }
 
-.scribble {
+.spiral {
   position: absolute;
+  width: 52px;
+  height: 30px;
   border: 4px solid var(--ink-blue);
-  border-radius: 55% 45% 52% 48%;
-  opacity: .9;
+  border-radius: 50%;
+  z-index: 5;
 }
-.s1 { width: 60px; height: 36px; left: 3%; top: 13%; }
-.s2 { width: 66px; height: 34px; left: 44%; top: 10%; }
-.s3 { width: 48px; height: 28px; left: 39%; top: 78%; }
-.s4 { width: 52px; height: 31px; right: 4%; top: 8%; }
-.s5 { width: 44px; height: 24px; right: 5%; top: 80%; }
+.spiral::after {
+  content: "";
+  position: absolute;
+  inset: 7px 10px;
+  border: 3px solid var(--ink-blue);
+  border-radius: 50%;
+  opacity: .7;
+}
+.s1 { left: 3%; top: 13%; }
+.s2 { left: 44%; top: 10%; width: 60px; }
+.s3 { left: 39%; top: 78%; width: 46px; height: 26px; }
+.s4 { right: 4%; top: 8%; }
+.s5 { right: 5%; top: 80%; width: 44px; height: 24px; }
+
+.robot-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 80;
+  overflow: visible;
+}
 
 .flying-robot {
   position: absolute;
@@ -124,11 +155,8 @@ body {
   top: 120px;
   width: 108px;
   height: 84px;
-  z-index: 60;
-  pointer-events: none;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,.25));
 }
-
 .prop {
   position: absolute;
   top: 1px;
@@ -139,7 +167,6 @@ body {
   border-radius: 50px;
   transform-origin: center;
 }
-
 .mast {
   position: absolute;
   left: 50px;
@@ -148,7 +175,6 @@ body {
   height: 16px;
   background: #f07f2b;
 }
-
 .bot-body {
   position: absolute;
   left: 7px;
@@ -159,7 +185,6 @@ body {
   border-radius: 50% / 55%;
   background: rgba(255, 156, 84, 0.08);
 }
-
 .eye {
   position: absolute;
   top: 11px;
@@ -170,7 +195,6 @@ body {
 }
 .e1 { left: 18px; }
 .e2 { right: 18px; }
-
 .grill {
   position: absolute;
   left: 11px;
@@ -178,18 +202,10 @@ body {
   bottom: 10px;
   height: 18px;
   border-top: 4px solid #f07f2b;
-  background: repeating-linear-gradient(
-    to right,
-    transparent 0 14px,
-    #f07f2b 14px 17px
-  );
+  background: repeating-linear-gradient(to right, transparent 0 14px, #f07f2b 14px 17px);
 }
 
-.robot-trail {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
+.robot-trail { position: absolute; inset: 0; }
 .robot-dot {
   position: absolute;
   width: 7px;
@@ -215,4 +231,6 @@ body {
   .tri-inner { border-left-width: 60px; border-right-width: 60px; border-bottom-width: 105px; }
   .zig { width: 180px; }
   .zig::before, .zig::after { width: 140px; left: 35%; }
+  .a-left { left: 16%; }
+  .a-right { left: 36%; }
 }
