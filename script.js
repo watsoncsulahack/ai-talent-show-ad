@@ -30,25 +30,24 @@ if (trail) {
   }
 }
 
-let lastX = window.innerWidth * 0.5;
-let lastY = window.innerHeight * 0.45;
+let tipX = window.innerWidth * 0.5;
+let tipY = window.innerHeight * 0.45;
+let prevTipX = tipX;
+let prevTipY = tipY;
 let lastTrailAt = 0;
 
-function updateTrail(x, y, t) {
-  if (t - lastTrailAt < 62) return;
-
-  const prev = trailPoints[0];
-  if (prev) {
-    const dx = x - prev.x;
-    const dy = y - prev.y;
-    if (Math.hypot(dx, dy) > 180) {
-      trailPoints.length = 0;
+function updateTrailFromTip(x, y, t) {
+  if (t - lastTrailAt >= 62) {
+    const prev = trailPoints[0];
+    if (prev) {
+      const dx = x - prev.x;
+      const dy = y - prev.y;
+      if (Math.hypot(dx, dy) > 180) trailPoints.length = 0;
     }
+    trailPoints.unshift({ x, y });
+    if (trailPoints.length > maxDots) trailPoints.pop();
+    lastTrailAt = t;
   }
-
-  trailPoints.unshift({ x, y });
-  if (trailPoints.length > maxDots) trailPoints.pop();
-  lastTrailAt = t;
 
   for (let i = 0; i < trailDots.length; i++) {
     const p = trailPoints[i];
@@ -80,19 +79,20 @@ function frame(t) {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    const x = w * 0.5 + Math.cos(time * 0.95) * (w * 0.58) + Math.sin(time * 3.6) * 30;
-    const y = h * 0.5 + Math.sin(time * 1.3) * (h * 0.44) + Math.cos(time * 4.8) * 18;
+    // Tail owns the path. Tip is the leading point.
+    tipX = w * 0.5 + Math.cos(time * 0.95) * (w * 0.58) + Math.sin(time * 3.6) * 30;
+    tipY = h * 0.5 + Math.sin(time * 1.3) * (h * 0.44) + Math.cos(time * 4.8) * 18;
 
-    const angle = Math.atan2(y - lastY, x - lastX) * 180 / Math.PI;
-    robot.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
+    const angle = Math.atan2(tipY - prevTipY, tipX - prevTipX) * 180 / Math.PI;
 
+    // Robot head mapped directly to trail tip.
+    robot.style.transform = `translate(${tipX}px, ${tipY}px) translate(-50%, -50%) rotate(${angle}deg)`;
     if (prop) prop.style.transform = `rotate(${time * 2400}deg)`;
 
-    // True trailing path: exact robot center positions.
-    updateTrail(x, y, t);
+    updateTrailFromTip(tipX, tipY, t);
 
-    lastX = x;
-    lastY = y;
+    prevTipX = tipX;
+    prevTipY = tipY;
   }
 
   requestAnimationFrame(frame);
